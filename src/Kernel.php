@@ -15,7 +15,10 @@ class Kernel extends BaseKernel
 
     function boot(): void
     {
+        parent::boot();
         set_time_limit(300);
+        ini_set('memory_limit',' 2048M');
+        
         $output = new ConsoleOutput();
 
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
@@ -52,6 +55,5 @@ class Kernel extends BaseKernel
             }
             $setBar->finish();
         }
-        parent::boot();
     }
 }
