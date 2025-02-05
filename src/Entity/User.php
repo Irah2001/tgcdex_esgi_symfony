@@ -45,9 +45,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private bool $isVerified = false;
 
+    /**
+     * @var Collection<int, JwtToken>
+     */
+    #[ORM\OneToMany(targetEntity: JwtToken::class, mappedBy: 'user')]
+    private Collection $jwtTokens;
+
     public function __construct()
     {
         $this->pokedex = new ArrayCollection();
+        $this->jwtTokens = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -157,6 +164,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsVerified(bool $isVerified): static
     {
         $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, JwtToken>
+     */
+    public function getJwtTokens(): Collection
+    {
+        return $this->jwtTokens;
+    }
+
+    public function addJwtToken(JwtToken $jwtToken): static
+    {
+        if (!$this->jwtTokens->contains($jwtToken)) {
+            $this->jwtTokens->add($jwtToken);
+            $jwtToken->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeJwtToken(JwtToken $jwtToken): static
+    {
+        if ($this->jwtTokens->removeElement($jwtToken)) {
+            // set the owning side to null (unless already changed)
+            if ($jwtToken->getUser() === $this) {
+                $jwtToken->setUser(null);
+            }
+        }
 
         return $this;
     }
