@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Service;
+
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
