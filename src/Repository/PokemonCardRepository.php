@@ -11,9 +11,18 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class PokemonCardRepository extends ServiceEntityRepository
 {
+
+    private $entityManager;
+
     public function __construct(ManagerRegistry $registry)
     {
+        $this->entityManager = $registry->getManager();
         parent::__construct($registry, PokemonCard::class);
+    }
+
+    public function save(PokemonCard $card, $flush = true){
+        $this->entityManager->persist($card);
+        if ($flush) $this->entityManager->flush();
     }
 
 //    /**
