@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% for flash_error in app.flashes('login_error') %}
+        <div role="alert">{{ flash_error }}</div>
+    {% endfor %}
+
+    <form action="{{ path('auth_login') }}" method="post">
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">login</button>
+    </form>
+{% endblock %}

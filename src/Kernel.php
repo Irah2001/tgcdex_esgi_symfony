@@ -4,7 +4,7 @@ namespace App;
 
 use App\Entity\PokemonCard;
 use Exception;
-use Pokedex;
+use App\Service\Pokedex;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\ConsoleOutput;
