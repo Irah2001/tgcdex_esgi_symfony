@@ -28,7 +28,7 @@ class User
     /**
      * @var Collection<int, PokemonCard>
      */
-    #[ORM\ManyToMany(targetEntity: PokemonCard::class)]
+    #[ORM\ManyToMany(targetEntity: PokemonCard::class, inversedBy: 'users')]
     private Collection $pokedex;
 
     public function __construct()

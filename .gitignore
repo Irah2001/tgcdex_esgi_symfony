@@ -50,3 +50,10 @@
 
 # Embedded web-server pid file
 /.web-server-pid
+###> symfony/asset-mapper ###
+/public/assets/
+/assets/vendor/
+/public/build/
+###< symfony/asset-mapper ###
+
+node_modules
