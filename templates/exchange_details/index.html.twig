@@ -114,7 +114,11 @@ img.card-img{
     </div>
 </div>
 <div class="exchange-btns">
-    <a href="/exchange/{{ exchange.getId() }}/accept">Accepter</a>
-    <a href="/exchange">Refuser</a>
+    {% if exchange.getExecutedAt() == null %}
+        <a href="/exchange/{{ exchange.getId() }}/accept">Accepter</a>
+        <a href="/exchange">Refuser</a>
+    {% else %}
+        Échange réalisé avec {{ exchange.getReceiver().getEmail() }} le {{ exchange.getExecutedAt().format("d F Y H:i:s")}}
+    {% endif %}
 </div>
 {% endblock %}

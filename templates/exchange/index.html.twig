@@ -63,6 +63,7 @@ h1 {
 </div>
 <div class="exchanges">
 {% for exchange in exchanges %}
+    {% if exchange.getExecutedAt() == null %}    
     <a href="/exchange/{{ exchange.getId() }}">
         <div class="images">
             <img class="main-img" src="{{ exchange.getGivenCards()[0].getImgUrl() }}" />
@@ -70,6 +71,7 @@ h1 {
         </div>
         <p>Échange de {{ exchange.getSender().getEmail() }}</p>
     </a>
+    {% endif %}
 {% endfor %}
 </div>
 {% endblock %}

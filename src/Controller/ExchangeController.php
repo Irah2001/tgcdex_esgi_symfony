@@ -9,6 +9,7 @@ use App\Form\ExchangeCreateFormType;
 use App\Repository\ExchangeRepository;
 use App\Repository\PokemonCardRepository;
 use App\Repository\UserRepository;
+use DateTime;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -72,6 +73,10 @@ final class ExchangeController extends AbstractController
             }
             $userRepository->save($user);
             $userRepository->save($sender);
+            $exchange->setExecutedAt(new DateTime("now"));
+            $exchange->setReceiver($user);
+            $exchangeRepository->save($exchange);
+            
             $status = "Échange réussi!";
         } else {
             $status = "Vous n'avez pas les cartes nécéssaires!";
