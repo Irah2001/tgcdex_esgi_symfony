@@ -4,7 +4,6 @@
 
 {% block stylesheets %}
 <style>
-
 .form-content {
     display: grid;
     width: 100%;
@@ -18,9 +17,10 @@
 
 
 {% block body %}
-<h1>Créer un échange</h1>
+<div class="mx-32">
+<h1 class="text-3xl">Créer un échange</h1>
 <form action="/exchange-create" method="post">
-    <button type="submit">Créer l'échange</button>
+    <button type="submit" class="inline-block text-sm px-4 py-2 leading-none border rounded text-yellow-900 border-yellow-900 hover:border-transparent hover:text-yellow-400 hover:bg-yellow-900 mt-4 lg:mt-0">Créer l'échange</button>
     <div class="form-content">
         <div class="left-column">
             <h2>Cartes a donner</h2>
@@ -30,13 +30,14 @@
         </div>
         <div class="right-column">
             <h2>Cartes a recevoir</h2>
-            <input type="text" id="searchInput"> <br>
+            <input type="text" id="searchInput" class="outline outline-1" placeholder="Rechercher..."> <br>
             {% for card in allCards %}
                 <div class="gaincard" aria-label="{{ card.getName() }}"><input type="checkbox" value="{{ card.getId() }}" name="gainCards[]"> {{ card.getName() }} </div>
             {% endfor %}
         </div>
     </div>
 </form>
+</div>
 
 <script>
     let sField = document.getElementById("searchInput").addEventListener("input", search);
