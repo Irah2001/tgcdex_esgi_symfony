@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Open Booster Pack{% endblock %}
+
+{% block body %}
+<!-- Outer wrapper for full-height background gradient -->
+<div class="min-h-screen bg-gradient-to-b from-yellow-200 via-red-200 to-pink-300 py-10">
+    <!-- Tailwind's container centers content and applies padding -->
+    <div class="container mx-auto px-4">
+        
+        <!-- Title with Tailwind styling -->
+        <h1 class="text-4xl md:text-5xl font-extrabold text-center text-yellow-600 drop-shadow-lg mb-8">
+            Booster Pack Opening
+        </h1>
+        
+        <!-- Grid container: 
+             1 column on mobile, 2 columns on small, 3 columns on medium, 4 on large -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for card in cards %}
+                <!-- Card wrapper with hover effect -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-2xl">
+                    <!-- Display card image -->
+                    <img 
+                        src="{{ card.getImgUrl() }}"
+                        alt="{{ card.getName() }}"
+                        class="w-full h-full object-cover"
+                    >
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- 'Open Another Booster' button -->
+        <div class="flex justify-center mt-8">
+            <a 
+                href="{{ path('open_booster') }}" 
+                class="inline-block bg-yellow-400 text-yellow-900 px-6 py-3 rounded-full font-bold uppercase tracking-wide shadow-md hover:bg-yellow-500 hover:shadow-xl transition"
+            >
+                Open Another Booster
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
