@@ -26,7 +26,7 @@ final class ExchangeController extends AbstractController
         return true;
     }
 
-    #[Route('/exchange', name: 'app_exchange')]
+    #[Route('/exchange', name: 'exchange')]
     public function index(ExchangeRepository $exchangeRepository): Response
     {
         $exchanges = $exchangeRepository->findAll();
