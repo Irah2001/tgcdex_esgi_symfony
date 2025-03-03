@@ -12,7 +12,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class PokedexController extends AbstractController
 {
-    #[Route('/pokedex', name: 'app_pokedex')]
+    #[Route('/pokedex', name: 'pokedex')]
     #[IsGranted('ROLE_USER')]
     public function index(PokemonCardRepository $pokemonCardRepository): Response
     {

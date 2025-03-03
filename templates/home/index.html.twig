@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PokéPack Explorer - Your Pokémon Card Adventure Begins!{% endblock %}
+
+{% block body %}
+<div class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-300 via-pink-400 to-red-400 overflow-hidden">
+    <!-- Animated Pokéballs -->
+    <div class="absolute top-0 left-0 w-48 h-48 bg-center bg-contain bg-no-repeat opacity-20 animate-bounce" 
+         style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Pokebola-pokeball-png-0.png/601px-Pokebola-pokeball-png-0.png');">
+    </div>
+    <div class="absolute bottom-0 right-0 w-64 h-64 bg-center bg-contain bg-no-repeat opacity-20 animate-spin-slow" 
+         style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Pokebola-pokeball-png-0.png/601px-Pokebola-pokeball-png-0.png');">
+    </div>
+
+    <!-- Main Content -->
+    <div class="z-10 text-center px-6 py-10 space-y-8 max-w-4xl bg-white bg-opacity-80 rounded-xl shadow-2xl">
+        <!-- Title -->
+        <h1 class="text-5xl md:text-6xl font-extrabold text-yellow-600 tracking-wider drop-shadow-md uppercase animate-pulse">
+            PokéPack Explorer
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="text-2xl md:text-3xl text-gray-700 font-bold">
+            Your Journey to Become a Card Master Begins Here!
+        </p>
+
+        <!-- Feature Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            <div class="bg-yellow-100 rounded-lg p-6 shadow-md transform hover:scale-105 transition-transform duration-300">
+                <h3 class="text-xl font-bold text-yellow-600 mb-2">Open Packs</h3>
+                <p class="text-gray-700">Experience the thrill of revealing rare and powerful Pokémon cards!</p>
+            </div>
+            <div class="bg-pink-100 rounded-lg p-6 shadow-md transform hover:scale-105 transition-transform duration-300">
+                <h3 class="text-xl font-bold text-pink-600 mb-2">Collect them all !</h3>
+                <p class="text-gray-700">Collect all the Pokémon cards !</p>
+            </div>
+            <div class="bg-red-100 rounded-lg p-6 shadow-md transform hover:scale-105 transition-transform duration-300">
+                <h3 class="text-xl font-bold text-red-600 mb-2">Trade for VIP</h3>
+                <p class="text-gray-700">Connect with trainers worldwide to trade cards !</p>
+            </div>
+        </div>
+
+        <!-- CTA Button -->
+        <a href="{{ path('booster') }}" 
+           class="inline-block text-lg font-bold uppercase px-8 py-4 rounded-full shadow-lg 
+                  bg-yellow-400 text-yellow-900 hover:bg-yellow-500 transition-all 
+                  transform hover:-translate-y-1 hover:scale-110">
+            Open Your First Booster Pack!
+        </a>
+
+        <!-- Pokédex-style info box -->
+        <div class="mt-8 bg-red-500 border-4 border-blue-600 rounded-lg p-6 max-w-2xl mx-auto transform -rotate-1">
+            <h4 class="text-lg font-bold text-white mb-2">Pokédex Entry: PokéPack Explorer</h4>
+            <p class="text-sm text-white">
+                A rare and powerful tool for aspiring Pokémon Card Masters. It allows trainers to discover and 
+                collect with virtual Pokémon cards from the comfort of their own home. Legend 
+                has it that those who master the PokéPack Explorer become unbeatable in Pokémon card !
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    @keyframes spin-slow {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    .animate-spin-slow {
+        animation: spin-slow 20s linear infinite;
+    }
+</style>
+{% endblock %}
