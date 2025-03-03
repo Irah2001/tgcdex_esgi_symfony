@@ -66,4 +66,9 @@ final class ExchangeController extends AbstractController
             'exchange' => $ex1,
         ]);
     }
+
+    #[Route('/exchange/{id}/accept', name: 'app_exchange_accept')]
+    public function accept(?Exchange $exchange) : Response {
+        return $this->render('base.html.twig'); // TODO
+    }
 }
