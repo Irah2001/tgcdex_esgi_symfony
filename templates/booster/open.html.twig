@@ -2,42 +2,639 @@
 
 {% block title %}Open Booster Pack{% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/Draggable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const boosterPack = document.getElementById('booster-pack');
+            const unopenedPack = document.getElementById('unopened-pack');
+            const cardsArea = document.getElementById('cards-area');
+            const cardsCarousel = document.getElementById('cards-carousel');
+            const cardEls = document.querySelectorAll('.card');
+            const progressDots = document.querySelectorAll('.progress-dot');
+            const carouselCards = document.querySelectorAll('.carousel-card');
+            const carouselDots = document.querySelectorAll('.carousel-dot');
+            const nextBtn = document.getElementById('next-card');
+            const prevBtn = document.getElementById('prev-card');
+            
+            let currentCardIndex = 0;
+            let carouselIndex = 0;
+            let totalCards = cardEls.length;
+            let revealedCards = 0;
+            
+            boosterPack.addEventListener('click', function() {
+                gsap.to(unopenedPack, {
+                    scale: 1.2,
+                    opacity: 0,
+                    duration: 0.8,
+                    onComplete: () => {
+                        unopenedPack.style.pointerEvents = 'none';
+                        cardsArea.style.opacity = '1';
+                        cardsArea.style.pointerEvents = 'auto';
+                        
+                        if(cardEls[0]) {
+                            const firstCardBack = cardEls[0].querySelector('.card-back');
+                            const firstCardFront = cardEls[0].querySelector('.card-front');
+                            
+                            gsap.to(firstCardBack, {
+                                opacity: 0,
+                                duration: 0.5,
+                                onComplete: () => {
+                                    firstCardFront.style.opacity = '1';
+                                    firstCardFront.style.zIndex = '10'; 
+                                    addShineEffect(cardEls[0]);
+                                }
+                            });
+                        }
+                        
+                        if(progressDots[0]) {
+                            progressDots[0].classList.add('opacity-100');
+                        }
+                    }
+                });
+                
+                gsap.fromTo(cardEls, {
+                    y: -300, 
+                    rotationX: -30,
+                    opacity: 0
+                }, {
+                    y: 0,
+                    rotationX: 0,
+                    opacity: 1,
+                    stagger: 0.1,
+                    duration: 1,
+                    delay: 0.5
+                });
+            });
+            
+            cardEls.forEach((card) => {
+                Draggable.create(card, {
+                    type: "x,y",
+                    bounds: {
+                        minX: -200,
+                        maxX: 200,
+                        minY: -200,
+                        maxY: 200
+                    },
+                    onDragStart: function() {
+                        if (parseInt(this.target.dataset.cardIndex) !== currentCardIndex) {
+                            return false;
+                        }
+                        this.target.classList.add('dragging');
+                        
+                        if (currentCardIndex < totalCards - 1) {
+                            const nextCard = cardEls[currentCardIndex + 1];
+                            const nextCardBack = nextCard.querySelector('.card-back');
+                            const nextCardFront = nextCard.querySelector('.card-front');
+                            
+                            gsap.to(nextCardBack, {
+                                opacity: 0.7,
+                                duration: 0.3
+                            });
+                            nextCardFront.style.opacity = '0.3';
+                        }
+                    },
+                    onDrag: function() {
+                        const xRot = this.y / 10;
+                        const yRot = -this.x / 10;
+                        gsap.set(this.target, { rotationX: xRot, rotationY: yRot });
+                        
+                        if (currentCardIndex < totalCards - 1) {
+                            const distance = Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+                            const nextCard = cardEls[currentCardIndex + 1];
+                            const nextCardBack = nextCard.querySelector('.card-back');
+                            const revealProgress = Math.min(1, distance / 100);
+                            
+                            gsap.to(nextCardBack, {
+                                opacity: 1 - revealProgress,
+                                duration: 0.1
+                            });
+                            
+                            const nextCardFront = nextCard.querySelector('.card-front');
+                            nextCardFront.style.opacity = revealProgress;
+                        }
+                    },
+                    onDragEnd: function() {
+                        this.target.classList.remove('dragging');
+                        const distance = Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+                        
+                        if (distance > 100) {
+                            const angle = Math.atan2(this.y, this.x);
+                            const throwX = Math.cos(angle) * 1000;
+                            const throwY = Math.sin(angle) * 1000;
+                            
+                            const cardBack = this.target.querySelector('.card-back');
+                            
+                            gsap.to(cardBack, {
+                                opacity: 0,
+                                duration: 0.3,
+                                onComplete: () => {
+                                    gsap.to(this.target, {
+                                        x: throwX,
+                                        y: throwY,
+                                        rotation: Math.random() * 720 - 360,
+                                        duration: 0.8,
+                                        ease: "power1.in",
+                                        opacity: 0,
+                                        onComplete: () => {
+                                            revealedCards++;
+                                            
+                                            if (revealedCards >= totalCards) {
+                                                showCarousel();
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                            
+                            currentCardIndex++;
+                            if (currentCardIndex < totalCards) {
+                                const nextCard = cardEls[currentCardIndex];
+                                const nextCardBack = nextCard.querySelector('.card-back');
+                                const nextCardFront = nextCard.querySelector('.card-front');
+                                
+                                gsap.to(nextCardBack, {
+                                    opacity: 0,
+                                    duration: 0.3,
+                                    onComplete: () => {
+                                        nextCardFront.style.opacity = '1';
+                                        nextCardFront.style.zIndex = '10';
+                                        addShineEffect(nextCard);
+                                    }
+                                });
+                                
+                                if(progressDots[currentCardIndex]) {
+                                    progressDots[currentCardIndex].classList.add('opacity-100');
+                                }
+                            }
+                        } else {
+                            gsap.to(this.target, {
+                                x: 0, y: 0, rotationX: 0, rotationY: 0,
+                                duration: 0.5,
+                                ease: "elastic.out(1, 0.3)"
+                            });
+                            
+                            if (currentCardIndex < totalCards - 1) {
+                                const nextCard = cardEls[currentCardIndex + 1];
+                                const nextCardBack = nextCard.querySelector('.card-back');
+                                const nextCardFront = nextCard.querySelector('.card-front');
+                                
+                                gsap.to(nextCardBack, {
+                                    opacity: 1,
+                                    duration: 0.3
+                                });
+                                nextCardFront.style.opacity = '0';
+                            }
+                        }
+                    }
+                });
+            });
+            
+            function showCarousel() {
+                gsap.to(cardsArea, { 
+                    opacity: 0, 
+                    pointerEvents: 'none', 
+                    duration: 0.5,
+                    onComplete: () => {
+                        gsap.to(cardsCarousel, { 
+                            opacity: 1,
+                            pointerEvents: 'auto', 
+                            duration: 0.8,
+                            onComplete: setupCarousel
+                        });
+                    }
+                });
+            }
+            
+            function setupCarousel() {
+                carouselCards.forEach((card, i) => {
+                    gsap.set(card, { 
+                        x: 0,
+                        y: 0,
+                        opacity: i === 0 ? 1 : 0,
+                        scale: i === 0 ? 1 : 0.8,
+                        zIndex: totalCards - i
+                    });
+                });
+                
+                gsap.fromTo(carouselCards[0], 
+                    { scale: 0.5, rotation: -10, y: 50 },
+                    {
+                        scale: 1, rotation: 0, y: 0,
+                        duration: 0.8, ease: "back.out(1.7)",
+                        onComplete: () => highlightCard(0)
+                    }
+                );
+                
+                nextBtn.addEventListener('click', () => {
+                    carouselIndex = (carouselIndex + 1) % totalCards;
+                    changeCard(carouselIndex);
+                });
+                
+                prevBtn.addEventListener('click', () => {
+                    carouselIndex = (carouselIndex - 1 + totalCards) % totalCards;
+                    changeCard(carouselIndex);
+                });
+                
+                carouselDots.forEach((dot, index) => {
+                    dot.addEventListener('click', () => {
+                        if (carouselIndex !== index) {
+                            carouselIndex = index;
+                            changeCard(carouselIndex);
+                        }
+                    });
+                });
+                
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                        nextBtn.click();
+                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                        prevBtn.click();
+                    }
+                });
+                
+                let startX = 0;
+                let isDragging = false;
+                
+                cardsCarousel.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    isDragging = true;
+                }, { passive: true });
+                
+                cardsCarousel.addEventListener('touchmove', (e) => {
+                    if (!isDragging) return;
+                    const diff = e.touches[0].clientX - startX;
+                    
+                    if (Math.abs(diff) > 20) {
+                        const currentCard = carouselCards[carouselIndex];
+                        gsap.to(currentCard, {
+                            x: diff * 0.5,
+                            rotation: diff * 0.02,
+                            duration: 0.2
+                        });
+                    }
+                }, { passive: true });
+                
+                cardsCarousel.addEventListener('touchend', (e) => {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    
+                    const diff = e.changedTouches[0].clientX - startX;
+                    const currentCard = carouselCards[carouselIndex];
+                    
+                    if (Math.abs(diff) > 100) {
+                        const direction = diff < 0 ? 1 : -1;
+                        const newIndex = (carouselIndex + direction + totalCards) % totalCards;
+                        
+                        gsap.to(currentCard, {
+                            x: diff < 0 ? -window.innerWidth : window.innerWidth,
+                            rotation: diff < 0 ? -5 : 5,
+                            opacity: 0,
+                            duration: 0.3,
+                            onComplete: () => {
+                                carouselIndex = newIndex;
+                                changeCard(newIndex);
+                            }
+                        });
+                    } else {
+                        gsap.to(currentCard, {
+                            x: 0, rotation: 0,
+                            duration: 0.3,
+                            ease: "power2.out"
+                        });
+                    }
+                }, { passive: true });
+            }
+            
+            function changeCard(index) {
+                carouselDots.forEach((dot, i) => {
+                    dot.classList.toggle('opacity-100', i === index);
+                    dot.classList.toggle('opacity-40', i !== index);
+                });
+                
+                carouselCards.forEach((card, i) => {
+                    if (i !== index) {
+                        gsap.to(card, {
+                            opacity: 0,
+                            scale: 0.8,
+                            duration: 0.3
+                        });
+                    }
+                });
+                
+                const targetCard = carouselCards[index];
+                const fromDirection = Math.random() < 0.5 ? -1 : 1;
+                
+                gsap.fromTo(targetCard,
+                    { opacity: 0, scale: 0.8, x: fromDirection * 100 },
+                    {
+                        opacity: 1, scale: 1, x: 0, zIndex: 100,
+                        duration: 0.6, ease: "back.out(1.5)",
+                        onComplete: () => {
+                            highlightCard(index);
+                            gsap.set(targetCard, { zIndex: 100 });
+                            gsap.to(targetCard, {
+                                y: -5, duration: 1.5,
+                                repeat: -1, yoyo: true,
+                                ease: "sine.inOut"
+                            });
+                        }
+                    }
+                );
+            }
+            
+            function highlightCard(index) {
+                carouselDots.forEach((dot, i) => {
+                    dot.classList.toggle('opacity-100', i === index);
+                    dot.classList.toggle('opacity-40', i !== index);
+                });
+                
+                const card = carouselCards[index];
+                
+                gsap.to(card, {
+                    boxShadow: '0 0 30px rgba(255, 215, 0, 0.7), 0 0 15px rgba(255, 255, 255, 0.8)',
+                    filter: 'brightness(1.1)',
+                    duration: 0.5
+                });
+                
+                addCardSparkle(card);
+                
+                gsap.to(card, {
+                    y: -5, duration: 2,
+                    repeat: -1, yoyo: true,
+                    ease: "sine.inOut"
+                });
+                
+                displayCardInfo(card);
+            }
+            
+            function displayCardInfo(card) {
+                const existingInfo = document.querySelector('.card-info');
+                if (existingInfo) existingInfo.remove();
+                
+                const cardInfo = document.createElement('div');
+                cardInfo.className = 'card-info absolute -bottom-20 left-0 right-0 bg-gradient-to-t from-purple-900 to-transparent p-3 rounded-b-xl opacity-0 text-center text-white font-bold';
+                
+                const cardName = card.querySelector('img').alt;
+                cardInfo.textContent = cardName;
+                
+                card.parentElement.appendChild(cardInfo);
+                
+                gsap.to(cardInfo, {
+                    opacity: 1, y: -10,
+                    duration: 0.5, delay: 0.3
+                });
+            }
+            
+            function addCardSparkle(card) {
+                const existingSparkle = card.querySelector('.card-sparkle');
+                if (existingSparkle) existingSparkle.remove();
+                
+                const sparkle = document.createElement('div');
+                sparkle.className = 'card-sparkle absolute inset-0 pointer-events-none overflow-hidden';
+                card.appendChild(sparkle);
+                
+                for (let i = 0; i < 10; i++) {
+                    createSparkleParticle(sparkle);
+                }
+            }
+            
+            function createSparkleParticle(container) {
+                const particle = document.createElement('div');
+                particle.className = 'absolute rounded-full bg-white';
+                
+                const size = Math.random() * 6 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                particle.style.left = `${x}%`;
+                particle.style.top = `${y}%`;
+                
+                container.appendChild(particle);
+                
+                gsap.fromTo(particle,
+                    { opacity: 0, scale: 0 },
+                    {
+                        opacity: 1, scale: 1,
+                        duration: 0.3 + Math.random() * 0.5,
+                        repeat: 1, yoyo: true,
+                        onComplete: () => {
+                            particle.remove();
+                            createSparkleParticle(container);
+                        }
+                    }
+                );
+            }
+            
+            function addShineEffect(card) {
+                if (!card.querySelector('.shine')) {
+                    const shine = document.createElement('div');
+                    shine.className = 'shine absolute inset-0 bg-gradient-to-br from-white via-transparent to-transparent opacity-0 pointer-events-none';
+                    card.appendChild(shine);
+                    
+                    gsap.to(shine, {
+                        opacity: 0.7,
+                        duration: 1,
+                        repeat: -1,
+                        repeatDelay: 3,
+                        yoyo: true
+                    });
+                    
+                    card.addEventListener('mousemove', (e) => {
+                        const rect = card.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        
+                        const percentX = x / rect.width;
+                        const percentY = y / rect.height;
+                        
+                        gsap.to(shine, {
+                            backgroundPosition: `${percentX * 100}% ${percentY * 100}%`,
+                            duration: 0.5
+                        });
+                    });
+                }
+            }
+        });
+    </script>
+{% endblock %}
+
 {% block body %}
-<!-- Outer wrapper for full-height background gradient -->
-<div class="min-h-screen bg-gradient-to-b from-yellow-200 via-red-200 to-pink-300 py-10">
-    <!-- Tailwind's container centers content and applies padding -->
-    <div class="container mx-auto px-4">
-        
-        <!-- Title with Tailwind styling -->
-        <h1 class="text-4xl md:text-5xl font-extrabold text-center text-yellow-600 drop-shadow-lg mb-8">
+<div class="relative min-h-screen bg-gradient-to-br from-yellow-300 via-pink-400 to-red-400 overflow-hidden py-10">
+    <!-- Decorative pokeball elements -->
+    <div 
+        class="absolute top-0 left-0 w-48 h-48 bg-center bg-contain bg-no-repeat opacity-20 animate-bounce" 
+        style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Pokebola-pokeball-png-0.png/601px-Pokebola-pokeball-png-0.png');">
+    </div>
+    <div 
+        class="absolute bottom-0 right-0 w-64 h-64 bg-center bg-contain bg-no-repeat opacity-20 animate-spin-slow" 
+        style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Pokebola-pokeball-png-0.png/601px-Pokebola-pokeball-png-0.png');">
+    </div>
+    
+    <div class="container mx-auto px-4 relative">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-center text-yellow-400 tracking-wider drop-shadow-md uppercase mb-8">
             Booster Pack Opening
         </h1>
         
-        <!-- Grid container: 
-             1 column on mobile, 2 columns on small, 3 columns on medium, 4 on large -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {% for card in cards %}
-                <!-- Card wrapper with hover effect -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-2xl">
-                    <!-- Display card image -->
-                    <img 
-                        src="{{ card.getImgUrl() }}"
-                        alt="{{ card.getName() }}"
-                        class="w-full h-full object-cover"
-                    >
+        <div id="booster-experience" class="relative max-w-xl mx-auto h-[70vh] flex flex-col items-center justify-start bg-opacity-0 rounded-xl p-6 z-10">
+            <!-- Unopened pack -->
+            <div id="unopened-pack" class="absolute top-0 left-0 w-full h-full flex items-center justify-center transition-all duration-700 z-20">
+                <div class="relative w-72 h-fit cursor-pointer transform transition hover:scale-105 group" id="booster-pack">
+                    <img src="https://images.pokemontcg.io/sv3pt5/cardback.jpg" alt="Pokemon Booster Pack" class="w-full h-full object-contain filter drop-shadow-2xl">
+                    <div class="absolute inset-0 bg-yellow-400 rounded-xl opacity-0 animate-pulse-glow"></div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="bg-yellow-400 text-yellow-900 px-6 py-3 rounded-full font-bold text-sm md:text-base opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-bounce uppercase">
+                            CLICK TO OPEN
+                        </span>
+                    </div>
                 </div>
-            {% endfor %}
+            </div>
+
+            <!-- Card reveal area -->
+            <div id="cards-area" class="absolute top-0 left-0 w-full h-full opacity-0 pointer-events-none transition-opacity duration-700">
+                <div id="cards-stack" class="relative w-full h-full flex items-center justify-center perspective-1000">
+                    <div class="relative w-64 h-96">
+                        {% for card in cards %}
+                            <div 
+                                class="card absolute top-0 left-0 w-72 h-full rounded-xl shadow-2xl cursor-grab active:cursor-grabbing transform transition-all {% if loop.index0 == 0 %}z-50{% endif %}" 
+                                data-card-index="{{ loop.index0 }}"
+                                style="z-index: {{ 100 - loop.index0 }}; transform: translateZ({{ loop.index0 * -2 }}px);"
+                            >
+                                <div class="card-front absolute inset-0 backface-hidden transition-transform duration-500 rounded-xl overflow-hidden opacity-0">
+                                    <img src="{{ card.getImgUrl() }}" alt="{{ card.getName() }}" class="w-full h-full object-contain">
+                                </div>
+                                <div class="card-back absolute inset-0 backface-hidden rounded-xl" style="background: url('https://images.pokemontcg.io/sv3pt5/cardback.jpg') center/cover;">
+                                    <div class="absolute inset-0 bg-blue-500 opacity-0 mix-blend-overlay"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Progress indicator -->
+                <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                    {% for card in cards %}
+                        <div class="w-3 h-3 rounded-full bg-yellow-400 opacity-40 progress-dot" data-dot-index="{{ loop.index0 }}"></div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Carousel display -->
+            <div id="cards-carousel" class="absolute top-0 left-0 w-full h-full opacity-0 pointer-events-none transition-opacity duration-700">
+                <div class="relative w-full h-full flex items-center justify-center">
+                    <div class="carousel-container w-72 h-96 relative">
+                        {% for card in cards %}
+                            <div class="carousel-card absolute top-0 left-0 w-72 h-fit rounded-xl shadow-lg transition-all duration-500 opacity-0"
+                                data-carousel-index="{{ loop.index0 }}">
+                                <img src="{{ card.getImgUrl() }}" alt="{{ card.getName() }}" class="w-full h-full object-contain rounded-xl">
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Navigation -->
+                    <button id="prev-card" class="absolute left-4 top-1/2 -translate-y-1/2 bg-yellow-400 text-yellow-900 p-3 rounded-full transform transition-all hover:scale-110 hover:bg-yellow-500 z-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button id="next-card" class="absolute right-4 top-1/2 -translate-y-1/2 bg-yellow-400 text-yellow-900 p-3 rounded-full transform transition-all hover:scale-110 hover:bg-yellow-500 z-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <!-- Indicators -->
+                    <div class="absolute bottom-8 left-0 right-0 flex justify-center gap-2 z-50">
+                        {% for card in cards %}
+                            <button class="w-3 h-3 rounded-full bg-yellow-400 opacity-40 carousel-dot hover:opacity-100 transition-all hover:scale-125"
+                                data-carousel-dot="{{ loop.index0 }}"></button>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- 'Open Another Booster' button -->
-        <div class="flex justify-center mt-8">
-            <a 
-                href="{{ path('open_booster') }}" 
-                class="inline-block bg-yellow-400 text-yellow-900 px-6 py-3 rounded-full font-bold uppercase tracking-wide shadow-md hover:bg-yellow-500 hover:shadow-xl transition"
-            >
+        <!-- Action button -->
+        <div class="flex justify-center mt-8 gap-4">
+            <a href="{{ path('open_booster') }}" 
+               class="inline-block text-lg font-bold uppercase px-8 py-3 rounded-full shadow-md 
+                      bg-yellow-400 text-yellow-900 hover:bg-yellow-500 transition-transform 
+                      transform hover:-translate-y-1">
                 Open Another Booster
             </a>
         </div>
     </div>
 </div>
+
+<style>
+    .backface-hidden {
+        backface-visibility: hidden;
+    }
+    
+    @keyframes pulse-glow {
+        0%, 100% { opacity: 0; }
+        50% { opacity: 0.3; }
+    }
+    
+    .animate-pulse-glow {
+        animation: pulse-glow 2s infinite;
+    }
+    
+    .perspective-1000 {
+        perspective: 1000px;
+    }
+    
+    .card {
+        transform-style: preserve-3d;
+        touch-action: none;
+    }
+    
+    .card.dragging {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+    }
+    
+    .shine {
+        background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0) 100%);
+        background-size: 200% 200%;
+        background-position: 0% 0%;
+        mix-blend-mode: overlay;
+    }
+
+    .carousel-container {
+        position: relative;
+        overflow: visible;
+    }
+    
+    .carousel-card {
+        position: absolute;
+        transition: all 0.5s ease;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+    
+    @keyframes sparkle {
+        0%, 100% { opacity: 0; transform: scale(0); }
+        50% { opacity: 1; transform: scale(1); }
+    }
+    
+    .card-sparkle div {
+        animation: sparkle 1.5s infinite ease-in-out;
+        animation-delay: var(--delay, 0s);
+        box-shadow: 0 0 3px 1px rgba(255, 255, 255, 0.8);
+    }
+    
+    @keyframes spin-slow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .animate-spin-slow {
+        animation: spin-slow 15s linear infinite;
+    }
+</style>
 {% endblock %}
