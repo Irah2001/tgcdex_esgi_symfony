@@ -16,6 +16,11 @@ class ExchangeRepository extends ServiceEntityRepository
         parent::__construct($registry, Exchange::class);
     }
 
+    public function save(Exchange $exchange){
+        $this->getEntityManager()->persist($exchange);
+        $this->getEntityManager()->flush();
+    }
+
 //    /**
 //     * @return Exchange[] Returns an array of Exchange objects
 //     */

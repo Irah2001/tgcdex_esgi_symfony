@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} Créer un échange {% endblock %}
+
+{% block stylesheets %}
+<style>
+
+.form-content {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+}
+.gaincard {
+    display: none;
+}
+</style>
+{% endblock %}
+
+
+{% block body %}
+<h1>Créer un échange</h1>
+<form action="/exchange-create" method="post">
+    <button type="submit">Créer l'échange</button>
+    <div class="form-content">
+        <div class="left-column">
+            <h2>Cartes a donner</h2>
+            {% for card in user.getPokedex() %}
+                <input type="checkbox" value="{{ card.getId() }}" name="givenCards[]"> {{ card.getName() }} <br>
+            {% endfor %}
+        </div>
+        <div class="right-column">
+            <h2>Cartes a recevoir</h2>
+            <input type="text" id="searchInput"> <br>
+            {% for card in allCards %}
+                <div class="gaincard" aria-label="{{ card.getName() }}"><input type="checkbox" value="{{ card.getId() }}" name="gainCards[]"> {{ card.getName() }} </div>
+            {% endfor %}
+        </div>
+    </div>
+</form>
+
+<script>
+    let sField = document.getElementById("searchInput").addEventListener("input", search);
+    let inputs = document.querySelectorAll('.gaincard');
+    inputs.forEach(element => {
+        element.style.display = "none";
+    });
+    function search(e){
+        if (e.target.value.length < 3) {
+            inputs.forEach(element => {
+                element.style.display = "none";
+            });
+            return;
+        };
+        inputs.forEach(element => {
+            if (element.ariaLabel.includes(e.target.value)) element.style.display = "block";
+            else element.style.display = "none";
+        });
+    }
+</script>
+
+{% endblock %}

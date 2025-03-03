@@ -5,14 +5,26 @@ namespace App\Controller;
 use App\Entity\Exchange;
 use App\Entity\PokemonCard;
 use App\Entity\User;
+use App\Form\ExchangeCreateFormType;
 use App\Repository\ExchangeRepository;
+use App\Repository\PokemonCardRepository;
+use App\Repository\UserRepository;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class ExchangeController extends AbstractController
 {
+
+    private function array_containsall($array, $all) {
+        foreach ($array as $v) {
+            if (!in_array($v, $all)) return false;
+        }
+        return true;
+    }
+
     #[Route('/exchange', name: 'app_exchange')]
     public function index(ExchangeRepository $exchangeRepository): Response
     {
@@ -21,54 +33,98 @@ final class ExchangeController extends AbstractController
             return $ex->getExecutedAt() == null;
         });
 
-        $ex1 = new Exchange();
-        $c1 = new PokemonCard();
-        $c1->setName("TEST");
-        $c1->setImgUrl("https://assets.tcgdex.net/fr/base/base1/72/high.png");
-        $c2 = new PokemonCard();
-        $c2->setName("TEST2");
-        $c2->setImgUrl("https://assets.tcgdex.net/fr/base/base2/20/high.png");
-        $ex1->addGainCard($c1);
-        $ex1->addGivenCard($c2);
-        $sen1 = new User();
-        $sen1->setEmail("a@b.c");
-        $ex1->setSender($sen1);
-
-        $exem = array($ex1, $ex1, $ex1, $ex1, $ex1, $ex1, $ex1, $ex1, $ex1);
-
         return $this->render('exchange/index.html.twig', [
             'controller_name' => 'ExchangeController',
-            'exchanges' => $exem,
+            'exchanges' => $exchanges,
         ]);
     }
 
     #[Route('/exchange/{id}', name: 'app_exchange_details')]
     public function details(?Exchange $exchange) : Response {
 
-        $ex1 = new Exchange();
-        $c1 = new PokemonCard();
-        $c1->setName("TEST");
-        $c1->setImgUrl("https://assets.tcgdex.net/fr/base/base1/72/high.png");
-        $c2 = new PokemonCard();
-        $c2->setName("TEST2");
-        $c2->setImgUrl("https://assets.tcgdex.net/fr/base/base2/20/high.png");
-        $ex1->addGainCard($c1);
-        $ex1->addGainCard($c2);
-        $ex1->addGivenCard($c1);
-        $ex1->addGivenCard($c2);
-        $sen1 = new User();
-        $sen1->setEmail("a@b.c");
-        $ex1->setSender($sen1);
-
-        //if (!$exchange) return $this->redirectToRoute("app_exchange");
+        if (!$exchange) return $this->redirectToRoute("app_exchange");
         return $this->render('exchange_details/index.html.twig', [
             'controller_name' => 'ExchangeController',
-            'exchange' => $ex1,
+            'exchange' => $exchange,
         ]);
     }
 
     #[Route('/exchange/{id}/accept', name: 'app_exchange_accept')]
-    public function accept(?Exchange $exchange) : Response {
-        return $this->render('base.html.twig'); // TODO
+    public function accept(?Exchange $exchange, ExchangeRepository $exchangeRepository, UserRepository $userRepository) : Response {
+
+        $user = $this->getUser();
+        if ($user == null) return $this->redirect("/login");
+
+        $userCards = $user->getPokedex();
+
+        $sender = $exchange->getSender();
+        //if ($user == $sender) return $this->redirect("/exchange/".$exchange->getId());
+        if ($this->array_containsall($exchange->getGainCards()->toArray(), $userCards->toArray())) {
+            // Les cartes sont bien présentes dans le pokédex
+            foreach ($exchange->getGainCards() as $card) {
+                $user->removePokedex($card);
+                $sender->addPokedex($card);
+            }
+
+            foreach ($exchange->getGivenCards() as $card) {
+                $user->addPokedex($card);
+                // On enlève pas les cartes du sender, c'est fait a la création de l'exchange
+            }
+            $userRepository->save($user);
+            $userRepository->save($sender);
+            $status = "Échange réussi!";
+        } else {
+            $status = "Vous n'avez pas les cartes nécéssaires!";
+        }
+
+
+        
+        //REturn to exchange_details and update it to be validated
+        return $this->render('exchange_details/index.html.twig', [
+            'controller_name' => 'ExchangeController',
+            'exchange' => $exchange,
+            "status" => $status,
+        ]);
+    }
+
+    #[Route('/exchange-create', name: 'app_exchange_create')]
+    public function create(Request $request, ExchangeRepository $exchangeRepository, PokemonCardRepository $pokemonCardRepository, UserRepository $userRepository) : Response {
+        $allCards = $pokemonCardRepository->findAll();
+        if ($request->isMethod('POST')) {
+            $givenCards = $request->request->all("givenCards");
+            $gainCards = $request->request->all("gainCards");
+
+            $user = $this->getUser();
+
+            if (!$user) {
+                return $this->redirect('/login');
+            }
+            if (!$givenCards || !$gainCards) return $this->redirect("/exchange-create");
+            if ($this->array_containsall($givenCards, array_map(function($c){return $c->getId();}, $user->getPokedex()->toArray()))){
+                $ex = new Exchange();
+                $ex->setSender($this->getUser());
+                foreach ($givenCards as $cardId) {
+                    $givethis = $pokemonCardRepository->findOneBy(array("id" => $cardId));
+                    $ex->addGivenCard($givethis);
+                    $user->removePokedex($givethis);
+                }
+                foreach ($gainCards as $cardId) {
+                    $ex->addGainCard($pokemonCardRepository->findOneBy(array("id" => $cardId)));
+                }
+
+                $exchangeRepository->save($ex);
+                $userRepository->save($user);
+                return $this->redirect("/exchange");
+            } else {
+                return $this->redirect("/exchange-create");
+            }
+            return $this->redirect("/exchange");
+        } else {
+            return $this->render('exchange_create/index.html.twig', [
+                "user" => $this->getUser(),
+                "allCards" => $allCards,
+            ]);
+        }
+        
     }
 }

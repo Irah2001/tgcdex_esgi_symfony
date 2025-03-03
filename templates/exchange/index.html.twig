@@ -40,14 +40,30 @@ h1 {
     width: 100%;
     font-size: 3rem;
 }
+.top {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+.top * {
+    width: 33%;
+}
+.top a {
+    text-align: right;
+    font-size: 1.5rem;
+}
 </style>
 {% endblock %}
 
 {% block body %}
-<h1>Échanges</h1>
+<div class="top">
+    <span></span>
+    <h1>Échanges</h1>
+    <a href="/exchange-create">Créer un échange</a>
+</div>
 <div class="exchanges">
 {% for exchange in exchanges %}
-    <a href="/exchange/1"  ><!--/{{ exchange.getId() }}"-->
+    <a href="/exchange/{{ exchange.getId() }}">
         <div class="images">
             <img class="main-img" src="{{ exchange.getGivenCards()[0].getImgUrl() }}" />
             <img class="child-img" src="{{ exchange.getGainCards()[0].getImgUrl() }}" />
