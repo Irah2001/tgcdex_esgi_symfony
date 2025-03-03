@@ -1,0 +1,57 @@
+<header class="bg-yellow-400 shadow-md fixed top-0 left-0 right-0 z-50 h-16">
+  <div class="container mx-auto px-4 py-3 h-full">
+    <nav class="flex items-center justify-between flex-wrap h-full">
+      <!-- Logo / Home Link -->
+      <div class="flex items-center flex-shrink-0 text-yellow-900 mr-6">
+        <a href="{{ path('home') }}" class="font-bold text-xl tracking-tight hover:text-yellow-700">PokéPack Explorer</a>
+      </div>
+
+      <!-- Mobile menu button -->
+      <div class="block lg:hidden">
+        <button id="mobile-menu-button" class="flex items-center px-3 py-2 border rounded text-yellow-900 border-yellow-900 hover:text-yellow-700 hover:border-yellow-700">
+          <svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <title>Menu</title>
+            <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Navigation Links -->
+      <div id="menu" class="w-full hidden flex-grow lg:flex lg:items-center lg:w-auto">
+        <div class="text-sm lg:flex-grow">
+          <a href="{{ path('home') }}" class="block mt-4 lg:inline-block lg:mt-0 text-yellow-900 hover:text-yellow-700 mr-4">
+            Home
+          </a>
+          <a href="{{ path('booster') }}" class="block mt-4 lg:inline-block lg:mt-0 text-yellow-900 hover:text-yellow-700 mr-4">
+            Open Booster
+          </a>
+          <a href="{{ path('pokedex') }}" class="block mt-4 lg:inline-block lg:mt-0 text-yellow-900 hover:text-yellow-700">
+            Pokédex
+          </a>
+        </div>
+
+        <!-- User Authentication Section -->
+        <div class="text-sm">
+          {% if app.user %}
+            <span class="block mt-4 lg:inline-block lg:mt-0 text-yellow-900 mr-4">
+              {{ app.user.email }}
+            </span>
+            <a href="{{ path('auth_register') }}" class="inline-block text-sm px-4 py-2 leading-none border rounded text-yellow-900 border-yellow-900 hover:border-transparent hover:text-yellow-400 hover:bg-yellow-900 mt-4 lg:mt-0">Logout</a>
+          {% else %}
+            <a href="{{ path('auth_login') }}" class="block mt-4 lg:inline-block lg:mt-0 text-yellow-900 hover:text-yellow-700 mr-4">
+              Login
+            </a>
+            <a href="{{ path('auth_logout') }}" class="inline-block text-sm px-4 py-2 leading-none border rounded text-yellow-900 border-yellow-900 hover:border-transparent hover:text-yellow-400 hover:bg-yellow-900 mt-4 lg:mt-0">Register</a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script>
+  document.getElementById('mobile-menu-button').addEventListener('click', function() {
+    var menu = document.getElementById('menu');
+    menu.classList.toggle('hidden');
+  });
+</script>
