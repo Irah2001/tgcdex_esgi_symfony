@@ -35,8 +35,7 @@ class JwtAuthenticator extends AbstractAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        $authHeader = $request->headers->get('Authorization');
-        $token = substr($authHeader, 7);
+        $token = $request->cookies->get('token');
 
         $parsedToken = $this->jwtService->parseToken($token);
 
