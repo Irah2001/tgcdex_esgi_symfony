@@ -22,9 +22,7 @@ use Symfony\Component\HttpFoundation\Cookie;
 
 class AuthController extends AbstractController
 {
-    public function __construct(private EmailVerifier $emailVerifier)
-    {
-    }
+    public function __construct(private EmailVerifier $emailVerifier) {}
 
     #[Route('/register', name: 'auth_register')]
     public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
@@ -54,7 +52,9 @@ class AuthController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
 
-            $this->emailVerifier->sendEmailConfirmation('auth_verify_email', $user,
+            $this->emailVerifier->sendEmailConfirmation(
+                'auth_verify_email',
+                $user,
                 (new TemplatedEmail())
                     ->from(new Address('no-reply@pokepack.com', 'PokéPack Explorer'))
                     ->to((string) $user->getEmail())
@@ -93,7 +93,6 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('auth_login');
         }
 
-        // @TODO Change the redirect on success and handle or remove the flash message in your templates
         $this->addFlash('success', 'Your email address has been verified');
 
         return $this->redirectToRoute('auth_login');
@@ -136,8 +135,7 @@ class AuthController extends AbstractController
 
             $cookie = Cookie::create('token', $token, time() + 86400, '/', null, false, true);
 
-            $redirectUrl = $request->query->get('redirect');
-            $response = $redirectUrl && $redirectUrl != "" ? $this->redirect($redirectUrl) : $this->redirectToRoute('home');
+            $response = $this->redirectToRoute('home');
             $response->headers->setCookie($cookie);
 
             return $response;

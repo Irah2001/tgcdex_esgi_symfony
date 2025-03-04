@@ -6,22 +6,19 @@ use App\Entity\User;
 use App\Repository\PokemonCardRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class PokedexController extends AbstractController
 {
     #[Route('/pokedex', name: 'pokedex')]
-    public function index(Request $request, PokemonCardRepository $pokemonCardRepository): RedirectResponse | Response
+    public function index(PokemonCardRepository $pokemonCardRepository): RedirectResponse | Response
     {
         /** @var User $user */
         $user = $this->getUser();
 
         if (!$user) {
-            $targetUrl = $request->getUri();
-
-            return new RedirectResponse('/login?redirect=' . urlencode($targetUrl));
+            return $this->redirectToRoute('auth_login');
         }
 
         $ownedCards = $user->getPokedex();

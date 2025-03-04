@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,6 +14,7 @@ class PurchaseController extends AbstractController
     #[Route('/purchase', name: 'vip_purchase')]
     public function index(): Response
     {
+        /** @var User $user */
         $user = $this->getUser();
 
         if (!$user) {
@@ -25,6 +27,7 @@ class PurchaseController extends AbstractController
     #[Route('/purchase/subscribe', name: 'vip_subscribe')]
     public function subscribe(UserRepository $userRepository): Response
     {
+        /** @var User $user */
         $user = $this->getUser();
 
         if (!$user) {
@@ -37,7 +40,7 @@ class PurchaseController extends AbstractController
         $userRepository->save($user, true);
 
         $this->addFlash('success', 'Congratulations! You are now a VIP Trainer!');
-        
+
         return $this->redirectToRoute('home');
     }
 }
