@@ -19,6 +19,7 @@ class ExchangeRepository extends ServiceEntityRepository
     public function save(Exchange $exchange){
         $this->getEntityManager()->persist($exchange);
         $this->getEntityManager()->flush();
+        return $exchange->getId();
     }
 
 //    /**

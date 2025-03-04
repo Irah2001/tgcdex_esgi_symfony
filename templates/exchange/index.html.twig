@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ExchangeController!{% endblock %}
+{% block title %}Exchanges{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -59,7 +59,7 @@ h1 {
 <div class="top">
     <span></span>
     <h1>Échanges</h1>
-    <a href="/exchange-create">Créer un échange</a>
+    <a href="/exchange-create">Create an exchange</a>
 </div>
 <div class="exchanges">
 {% for exchange in exchanges %}
@@ -69,7 +69,7 @@ h1 {
             <img class="main-img" src="{{ exchange.getGivenCards()[0].getImgUrl() }}" />
             <img class="child-img" src="{{ exchange.getGainCards()[0].getImgUrl() }}" />
         </div>
-        <p>Échange de {{ exchange.getSender().getEmail() }}</p>
+        <p>{{ exchange.getSender().getEmail() }}'s exchange</p>
     </a>
     {% endif %}
 {% endfor %}

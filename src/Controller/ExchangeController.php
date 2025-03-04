@@ -44,17 +44,18 @@ final class ExchangeController extends AbstractController
     public function details(?Exchange $exchange) : Response {
 
         if (!$exchange) return $this->redirectToRoute("app_exchange");
-        return $this->render('exchange_details/index.html.twig', [
+        return $this->render('exchange/details/index.html.twig', [
             'controller_name' => 'ExchangeController',
             'exchange' => $exchange,
         ]);
     }
 
     #[Route('/exchange/{id}/accept', name: 'app_exchange_accept')]
-    public function accept(?Exchange $exchange, ExchangeRepository $exchangeRepository, UserRepository $userRepository) : Response {
+    public function accept(?Exchange $exchange, ExchangeRepository $exchangeRepository, UserRepository $userRepository, Request $request) : Response {
 
         $user = $this->getUser();
-        if ($user == null) return $this->redirect("/login");
+        $targetUrl = $request->getUri();
+        if ($user == null) return $this->redirect("/login?redirect=" . urlencode($targetUrl));
 
         $userCards = $user->getPokedex();
 
@@ -85,7 +86,7 @@ final class ExchangeController extends AbstractController
 
         
         //REturn to exchange_details and update it to be validated
-        return $this->render('exchange_details/index.html.twig', [
+        return $this->render('exchange/details/index.html.twig', [
             'controller_name' => 'ExchangeController',
             'exchange' => $exchange,
             "status" => $status,
@@ -102,7 +103,8 @@ final class ExchangeController extends AbstractController
             $user = $this->getUser();
 
             if (!$user) {
-                return $this->redirect('/login');
+                $targetUrl = $request->getUri();
+                return $this->redirect('/login?redirect=' . urlencode($targetUrl));
             }
             if (!$givenCards || !$gainCards) return $this->redirect("/exchange-create");
             if ($this->array_containsall($givenCards, array_map(function($c){return $c->getId();}, $user->getPokedex()->toArray()))){
@@ -117,15 +119,15 @@ final class ExchangeController extends AbstractController
                     $ex->addGainCard($pokemonCardRepository->findOneBy(array("id" => $cardId)));
                 }
 
-                $exchangeRepository->save($ex);
+                $newID = $exchangeRepository->save($ex);
                 $userRepository->save($user);
-                return $this->redirect("/exchange");
+                return $this->redirect("/exchange/".$newID);
             } else {
                 return $this->redirect("/exchange-create");
             }
             return $this->redirect("/exchange");
         } else {
-            return $this->render('exchange_create/index.html.twig', [
+            return $this->render('exchange/create/index.html.twig', [
                 "user" => $this->getUser(),
                 "allCards" => $allCards,
             ]);

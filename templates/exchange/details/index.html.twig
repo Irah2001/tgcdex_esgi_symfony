@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Échange {{ exchange.getId() }}{% endblock %}
+{% block title %} Exchange {{ exchange.getId() }}{% endblock %}
 {% block stylesheets %}
 <style>
 
@@ -88,10 +88,10 @@ img.card-img{
 
 
 {% block body %}
-<h1>Échange</h1>
+<h1>Exchange</h1>
 <div class="exchange-sides">
     <div class="side-give">
-        <h2>{{ exchange.getSender().getEmail() }} donne ces cartes :</h2>
+        <h2>{{ exchange.getSender().getEmail() }} gives these cards :</h2>
         <div class="cardlist">
         {% for card in exchange.getGivenCards() %}
             <div class="card">
@@ -102,7 +102,7 @@ img.card-img{
         </div>
     </div>
     <div class="side-take">
-        <h2>Cartes demandées en échange : </h2>
+        <h2>Cards asked for : </h2>
         <div class="cardlist">
             {% for card in exchange.getGainCards() %}
                 <div class="card">
@@ -115,10 +115,10 @@ img.card-img{
 </div>
 <div class="exchange-btns">
     {% if exchange.getExecutedAt() == null %}
-        <a href="/exchange/{{ exchange.getId() }}/accept">Accepter</a>
-        <a href="/exchange">Refuser</a>
+        <a href="/exchange/{{ exchange.getId() }}/accept">Accept</a>
+        <a href="/exchange">Deny</a>
     {% else %}
-        Échange réalisé avec {{ exchange.getReceiver().getEmail() }} le {{ exchange.getExecutedAt().format("d F Y H:i:s")}}
+        Exchange made with {{ exchange.getReceiver().getEmail() }} the {{ exchange.getExecutedAt().format("d F Y H:i:s")}}
     {% endif %}
 </div>
 {% endblock %}
