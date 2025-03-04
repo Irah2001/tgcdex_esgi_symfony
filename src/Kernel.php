@@ -17,27 +17,27 @@ class Kernel extends BaseKernel
     function boot(): void
     {
         parent::boot();
-        try{
+        try {
             set_time_limit(300);
-            ini_set('memory_limit',' 2048M');
-            
+            ini_set('memory_limit', ' 2048M');
+
             $output = new ConsoleOutput();
             $output->writeln($this->environment);
 
             $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
             $cr = $entityManager->getRepository(PokemonCard::class);
-            if (count($cr->findAll()) != 0){
+            if (count($cr->findAll()) != 0) {
                 $output->write("Database not empty! Skipping.");
             } else {
 
                 $pkdex = new Pokedex();
                 $tgcDex = $pkdex->getDex("en");
-            
+
                 $sets = $tgcDex->set->list();
                 if (count($sets) == 0) {
                     $output->write("No sets available - is the API online ?");
-                } 
-            
+                }
+
                 $amount = 0;
 
                 $setBar = new ProgressBar($output, count($sets));
@@ -48,9 +48,9 @@ class Kernel extends BaseKernel
                         $c = new PokemonCard();
                         if (empty($card->image)) continue;
 
-                        $c->setImgUrl($card->image."/low.webp");
+                        $c->setImgUrl($card->image . "/low.webp");
                         $c->setName($card->name);
-                    
+
                         $cr->save($c, $j == array_key_last($sets) && $i == array_key_last($cardSet->cards));
                         $amount++;
                     }
@@ -59,7 +59,6 @@ class Kernel extends BaseKernel
                 $setBar->finish();
             }
         } catch (Exception) {
-            
         }
-    }   
+    }
 }

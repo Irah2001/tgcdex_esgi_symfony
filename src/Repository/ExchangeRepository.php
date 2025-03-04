@@ -16,34 +16,10 @@ class ExchangeRepository extends ServiceEntityRepository
         parent::__construct($registry, Exchange::class);
     }
 
-    public function save(Exchange $exchange){
+    public function save(Exchange $exchange)
+    {
         $this->getEntityManager()->persist($exchange);
         $this->getEntityManager()->flush();
         return $exchange->getId();
     }
-
-//    /**
-//     * @return Exchange[] Returns an array of Exchange objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('e.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Exchange
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
 }

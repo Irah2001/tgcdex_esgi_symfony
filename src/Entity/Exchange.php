@@ -30,14 +30,14 @@ class Exchange
      * @var Collection<int, PokemonCard>
      */
     #[ORM\ManyToMany(targetEntity: PokemonCard::class)]
-    #[ORM\JoinTable(name:"gain_cards")]
+    #[ORM\JoinTable(name: "gain_cards")]
     private Collection $gain_cards;
 
     /**
      * @var Collection<int, PokemonCard>
      */
     #[ORM\ManyToMany(targetEntity: PokemonCard::class)]
-    #[ORM\JoinTable(name:"given_cards")]
+    #[ORM\JoinTable(name: "given_cards")]
     private Collection $given_cards;
 
     public function __construct()

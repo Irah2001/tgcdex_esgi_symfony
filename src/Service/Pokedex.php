@@ -11,11 +11,13 @@ use Symfony\Component\HttpClient\Psr18Client;
 /**
  * Used to get the pokedex to do requests
  */
-class Pokedex {
+class Pokedex
+{
     /**
      * Get TCG Dex using language
      */
-    public function getDex($lang = "fr") : TCGdex {
+    public function getDex($lang = "fr"): TCGdex
+    {
         TCGdex::$requestFactory = new Psr17Factory();
         TCGdex::$responseFactory = new Psr17Factory();
 
@@ -24,4 +26,3 @@ class Pokedex {
         return new TCGdex($lang);
     }
 }
-?>

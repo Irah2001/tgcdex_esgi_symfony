@@ -28,7 +28,7 @@ class PokemonCardRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère les cartes possédées par un utilisateur donné avec pagination.
+     * Get all cards owned by a user.
      */
     public function findOwnedByUserPaginated(int $userId, int $page = 1, int $limit = 25): array
     {
@@ -42,7 +42,7 @@ class PokemonCardRepository extends ServiceEntityRepository
             ->getQuery();
 
         $paginator = new Paginator($query);
-        
+
         return [
             'items' => $paginator->getIterator(),
             'total' => $paginator->count(),
@@ -51,7 +51,7 @@ class PokemonCardRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère les cartes non possédées par un utilisateur donné avec pagination.
+     * Get all cards owned by a user.
      */
     public function findNotOwnedByUserPaginated(int $userId, int $page = 1, int $limit = 25): array
     {
@@ -65,48 +65,11 @@ class PokemonCardRepository extends ServiceEntityRepository
             ->getQuery();
 
         $paginator = new Paginator($query);
-        
+
         return [
             'items' => $paginator->getIterator(),
             'total' => $paginator->count(),
             'pages' => ceil($paginator->count() / $limit)
         ];
     }
-
-    /**
-     * Récupère les cartes non possédées par un utilisateur donné.
-     */
-    public function findNotOwnedByUser(int $userId)
-    {
-        return $this->createQueryBuilder('p')
-            ->leftJoin('p.users', 'u')
-            ->andWhere('u.id IS NULL OR u.id != :userId')
-            ->setParameter('userId', $userId)
-            ->getQuery();
-    }
-
-    //    /**
-    //     * @return PokemonCard[] Returns an array of PokemonCard objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?PokemonCard
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }
