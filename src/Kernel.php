@@ -31,7 +31,7 @@ class Kernel extends BaseKernel
             } else {
 
                 $pkdex = new Pokedex();
-                $tgcDex = $pkdex->getDex("fr");
+                $tgcDex = $pkdex->getDex("en");
             
                 $sets = $tgcDex->set->list();
                 if (count($sets) == 0) {
@@ -48,7 +48,7 @@ class Kernel extends BaseKernel
                         $c = new PokemonCard();
                         if (empty($card->image)) continue;
 
-                        $c->setImgUrl($card->image."/high.png");
+                        $c->setImgUrl($card->image."/low.webp");
                         $c->setName($card->name);
                     
                         $cr->save($c, $j == array_key_last($sets) && $i == array_key_last($cardSet->cards));
