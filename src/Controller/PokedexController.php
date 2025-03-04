@@ -4,22 +4,24 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\PokemonCardRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class PokedexController extends AbstractController
 {
     #[Route('/pokedex', name: 'pokedex')]
-    #[IsGranted('ROLE_USER')]
-    public function index(PokemonCardRepository $pokemonCardRepository): Response
+    public function index(Request $request, PokemonCardRepository $pokemonCardRepository): RedirectResponse | Response
     {
+        /** @var User $user */
         $user = $this->getUser();
 
         if (!$user) {
-            throw $this->createNotFoundException("Utilisateur non authentifié.");
+            $targetUrl = $request->getUri();
+
+            return new RedirectResponse('/login?redirect=' . urlencode($targetUrl));
         }
 
         $ownedCards = $user->getPokedex();

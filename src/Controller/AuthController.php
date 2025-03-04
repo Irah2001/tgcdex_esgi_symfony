@@ -19,7 +19,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 use App\Service\JwtService;
 use Symfony\Component\HttpFoundation\Cookie;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasher;
 
 class AuthController extends AbstractController
 {
@@ -30,6 +29,19 @@ class AuthController extends AbstractController
     #[Route('/register', name: 'auth_register')]
     public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
     {
+        $email = $request->request->get('email');
+        $referer = $request->headers->get('referer');
+
+        if ($email) {
+            $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+
+            if ($user) {
+                $this->addFlash('register_error', 'This email is already used');
+
+                return $this->redirect($referer);
+            }
+        }
+
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
@@ -44,13 +56,13 @@ class AuthController extends AbstractController
 
             $this->emailVerifier->sendEmailConfirmation('auth_verify_email', $user,
                 (new TemplatedEmail())
-                    ->from(new Address('no-reply@pokedex.com', 'Pokedex'))
+                    ->from(new Address('no-reply@pokepack.com', 'PokéPack Explorer'))
                     ->to((string) $user->getEmail())
                     ->subject('Please Confirm your Email')
                     ->htmlTemplate('auth/confirmation_email.html.twig')
             );
 
-            return $this->redirectToRoute('_profiler_home');
+            return $this->redirectToRoute('auth_login');
         }
 
         return $this->render('auth/register.html.twig', [
@@ -82,7 +94,7 @@ class AuthController extends AbstractController
         }
 
         // @TODO Change the redirect on success and handle or remove the flash message in your templates
-        $this->addFlash('success', 'Your email address has been verified.');
+        $this->addFlash('success', 'Your email address has been verified');
 
         return $this->redirectToRoute('auth_login');
     }
@@ -98,33 +110,34 @@ class AuthController extends AbstractController
             $email = $request->request->get('email');
             $password = $request->request->get('password');
 
-            echo $email;
-
+            $referer = $request->headers->get('referer');
             $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
-            if (!$user) {
-                $this->addFlash('login_error', 'Le combo email/mot de passe est invalide 1.' . $email);
 
-                return $this->render('auth/login.html.twig');
+            if (!$user) {
+                $this->addFlash('login_error', 'Invalid email and/or password');
+
+                return $this->redirect($referer);
             }
 
             if (!$passwordHasher->isPasswordValid($user, $password)) {
-                $this->addFlash('login_error', 'Le combo email/mot de passe est invalide 2.');
+                $this->addFlash('login_error', 'Invalid email and/or password');
 
-                return $this->render('auth/login.html.twig');
+                return $this->redirect($referer);
             }
 
             $token = $jwtService->createToken($user)->toString();
             $tokenEntity = new JwtToken();
             $tokenEntity->setToken($token);
-            $tokenEntity->setExpiresAt(new \DateTimeImmutable('+1 hour'));
+            $tokenEntity->setExpiresAt(new \DateTimeImmutable('+1 day'));
             $tokenEntity->setUser($user);
 
             $entityManager->persist($tokenEntity);
             $entityManager->flush();
 
-            $cookie = Cookie::create('token', $token, time() + 3600, '/', null, false, true);
+            $cookie = Cookie::create('token', $token, time() + 86400, '/', null, false, true);
 
-            $response = $this->redirectToRoute('auth_login');
+            $redirectUrl = $request->query->get('redirect');
+            $response = $redirectUrl && $redirectUrl != "" ? $this->redirect($redirectUrl) : $this->redirectToRoute('auth_login');
             $response->headers->setCookie($cookie);
 
             return $response;
@@ -136,6 +149,10 @@ class AuthController extends AbstractController
     #[Route("/logout", name: "auth_logout")]
     public function logout()
     {
-        throw new \Exception('This method can be blank - it will be intercepted by the logout key on the firewall.');
+        $cookie = Cookie::create('token', '', 0, '/', null, false, true);
+        $response = $this->redirectToRoute('home');
+        $response->headers->setCookie($cookie);
+
+        return $response;
     }
 }

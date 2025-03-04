@@ -29,7 +29,7 @@ class JwtAuthenticator extends AbstractAuthenticator
         if (preg_match('#^/(login|register)#', $request->getPathInfo())) {
             return false;
         }
-        
+
         return $request->cookies->has('token');
     }
 
@@ -65,7 +65,7 @@ class JwtAuthenticator extends AbstractAuthenticator
         return null;
     }
 
-    public function start(Request $request, AuthenticationException $authException = null): JsonResponse
+    public function start(): JsonResponse
     {
         return new JsonResponse(['error' => 'Authentification requise.'], JsonResponse::HTTP_UNAUTHORIZED);
     }
