@@ -137,7 +137,7 @@ class AuthController extends AbstractController
             $cookie = Cookie::create('token', $token, time() + 86400, '/', null, false, true);
 
             $redirectUrl = $request->query->get('redirect');
-            $response = $redirectUrl && $redirectUrl != "" ? $this->redirect($redirectUrl) : $this->redirectToRoute('auth_login');
+            $response = $redirectUrl && $redirectUrl != "" ? $this->redirect($redirectUrl) : $this->redirectToRoute('home');
             $response->headers->setCookie($cookie);
 
             return $response;
