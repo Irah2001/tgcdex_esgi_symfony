@@ -113,6 +113,7 @@ class Exchange
 
     /**
      * @return Collection<int, PokemonCard>
+     * cartes données par le créateur de l'échange
      */
     public function getGivenCards(): Collection
     {
