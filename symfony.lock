@@ -26,9 +26,6 @@
             "migrations/.gitignore"
         ]
     },
-    "knplabs/knp-paginator-bundle": {
-        "version": "v6.6.1"
-    },
     "nyholm/psr7": {
         "version": "1.8",
         "recipe": {
