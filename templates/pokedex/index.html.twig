@@ -5,44 +5,144 @@
 
 {% block body %}
 	<div class="container mx-auto p-4">
-        <div class="text-center mb-12">
-            <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-red-500">
-                Pokédex
-            </h1>
-            <p class="text-xl text-gray-600 mt-2">Découvre tous les Pokémon que tu possèdes et ceux qui te manquent !</p>
-        </div>
-
-		<div class="mb-8">
-			<h2 class="text-3xl font-bold text-gray-800">Pokémon possédés</h2>
-			{% if ownedCards|length > 0 %}
-				<ul class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-4">
-					{% for card in ownedCards %}
-						<li class="text-center transition-transform transform hover:scale-105 hover:shadow-lg rounded-lg bg-white p-4 border border-gray-200">
-							<img src="{{ card.imgUrl }}" alt="{{ card.name }}" class="mx-auto mb-2 w-full h-48 object-contain transition-all duration-300 hover:opacity-80">
-							<strong class="block text-sm font-medium text-gray-700">{{ card.name }}</strong>
-						</li>
-					{% endfor %}
-				</ul>
-			{% else %}
-				<p class="text-center text-gray-600 mt-4">Aucun Pokémon possédé.</p>
-			{% endif %}
+		<div class="text-center mb-12">
+			<h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-red-500">
+				Pokédex
+			</h1>
+			<p class="text-xl text-gray-600 mt-2">Find out which Pokémon you have and which ones you're missing!</p>
 		</div>
+		<div x-data="{ 
+			activeTab: localStorage.getItem('activeTab') || 'owned',
+			switchTab(tab) { 
+				this.activeTab = tab; 
+				localStorage.setItem('activeTab', tab);
+			}
+		}">
+			<div class="flex justify-center border-b border-gray-300 mb-6">
+				<button @click="switchTab('owned')" 
+					class="px-6 py-2 text-lg font-semibold transition-all" 
+					:class="activeTab === 'owned' ? 'border-b-4 border-blue-500 text-blue-500' : 'text-gray-500'">
+					Owned Pokémon
+				</button>
 
-		<div>
-			<h2 class="text-3xl font-bold text-gray-800">Pokémon non possédés</h2>
-			{% if notOwnedCards|length > 0 %}
-				<ul class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-4">
-					{% for card in notOwnedCards %}
-						<li class="text-center transition-transform transform hover:scale-105 hover:shadow-lg rounded-lg bg-white p-4 border border-gray-200">
-							<img src="{{ card.imgUrl }}" alt="{{ card.name }}" class="mx-auto mb-2 w-full h-48 object-contain transition-all duration-300 hover:opacity-80">
-							<strong class="block text-sm font-medium text-gray-700">{{ card.name }}</strong>
-						</li>
-					{% endfor %}
-				</ul>
-			{% else %}
-				<p class="text-center text-gray-600 mt-4">Tu possèdes déjà tous les Pokémon ! 🎉</p>
-			{% endif %}
+				<button @click="switchTab('notOwned')"
+					class="px-6 py-2 text-lg font-semibold transition-all"
+					:class="activeTab === 'notOwned' ? 'border-b-4 border-red-500 text-red-500' : 'text-gray-500'">
+					Unowned Pokémon
+				</button>
+			</div>
+
+			<!-- Owned Pokémon -->
+			<div x-show="activeTab === 'owned'" class="fade-in">
+				{% if ownedCards|length > 0 %}
+					<ul class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-8">
+						{% for card in ownedCards %}
+							<li class="text-center transition-transform transform hover:scale-105 hover:shadow-lg rounded-lg bg-white p-4 border border-gray-200">
+								<img src="{{ card.imgUrl }}" alt="{{ card.name }}" class="mx-auto mb-2 w-full h-48 object-contain transition-all duration-300 hover:opacity-80">
+								<strong class="block text-sm font-medium text-gray-700">{{ card.name }}</strong>
+							</li>
+						{% endfor %}
+					</ul>
+					
+					{# Owned Pagination #}
+					{% if ownedTotalPages > 1 %}
+						<div class="flex justify-center my-8">
+							<nav aria-label="Pagination" class="flex items-center space-x-2">
+								{% if ownedCurrentPage > 1 %}
+									<a href="{{ path('pokedex', {'owned_page': ownedCurrentPage-1, 'not_owned_page': notOwnedCurrentPage}) }}" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">&laquo;</a>
+								{% endif %}
+								
+								{% set startPage = max(1, ownedCurrentPage - 2) %}
+								{% set endPage = min(ownedTotalPages, ownedCurrentPage + 2) %}
+								
+								{% if startPage > 1 %}
+									<a href="{{ path('pokedex', {'owned_page': 1, 'not_owned_page': notOwnedCurrentPage}) }}" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">1</a>
+									{% if startPage > 2 %}
+										<span class="px-2">...</span>
+									{% endif %}
+								{% endif %}
+								
+								{% for page in startPage..endPage %}
+									{% if page == ownedCurrentPage %}
+										<span class="px-3 py-1 bg-blue-500 text-white rounded-md">{{ page }}</span>
+									{% else %}
+										<a href="{{ path('pokedex', {'owned_page': page, 'not_owned_page': notOwnedCurrentPage}) }}" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">{{ page }}</a>
+									{% endif %}
+								{% endfor %}
+								
+								{% if endPage < ownedTotalPages %}
+									{% if endPage < ownedTotalPages - 1 %}
+										<span class="px-2">...</span>
+									{% endif %}
+									<a href="{{ path('pokedex', {'owned_page': ownedTotalPages, 'not_owned_page': notOwnedCurrentPage}) }}" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">{{ ownedTotalPages }}</a>
+								{% endif %}
+								
+								{% if ownedCurrentPage < ownedTotalPages %}
+									<a href="{{ path('pokedex', {'owned_page': ownedCurrentPage+1, 'not_owned_page': notOwnedCurrentPage}) }}" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">&raquo;</a>
+								{% endif %}
+							</nav>
+						</div>
+					{% endif %}
+				{% else %}
+					<p class="text-center text-gray-600 mt-4">No Pokémon owned.</p>
+				{% endif %}
+			</div>
+
+			<!-- Unowned Pokémon -->
+			<div x-show="activeTab === 'notOwned'" class="fade-in">
+				{% if notOwnedCards|length > 0 %}
+					<ul class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-8">
+						{% for card in notOwnedCards %}
+							<li class="text-center transition-transform transform hover:scale-105 hover:shadow-lg rounded-lg bg-white p-4 border border-gray-200">
+								<img src="{{ card.imgUrl }}" alt="{{ card.name }}" class="mx-auto mb-2 w-full h-48 object-contain transition-all duration-300 hover:opacity-80">
+								<strong class="block text-sm font-medium text-gray-700">{{ card.name }}</strong>
+							</li>
+						{% endfor %}
+					</ul>
+					
+					{# Not Owned Pagination #}
+					{% if notOwnedTotalPages > 1 %}
+						<div class="flex justify-center my-8">
+							<nav aria-label="Pagination" class="flex items-center space-x-2">
+								{% if notOwnedCurrentPage > 1 %}
+									<a href="{{ path('pokedex', {'owned_page': ownedCurrentPage, 'not_owned_page': notOwnedCurrentPage-1}) }}" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">&laquo;</a>
+								{% endif %}
+								
+								{% set startPage = max(1, notOwnedCurrentPage - 2) %}
+								{% set endPage = min(notOwnedTotalPages, notOwnedCurrentPage + 2) %}
+								
+								{% if startPage > 1 %}
+									<a href="{{ path('pokedex', {'owned_page': ownedCurrentPage, 'not_owned_page': 1}) }}" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">1</a>
+									{% if startPage > 2 %}
+										<span class="px-2">...</span>
+									{% endif %}
+								{% endif %}
+								
+								{% for page in startPage..endPage %}
+									{% if page == notOwnedCurrentPage %}
+										<span class="px-3 py-1 bg-red-500 text-white rounded-md">{{ page }}</span>
+									{% else %}
+										<a href="{{ path('pokedex', {'owned_page': ownedCurrentPage, 'not_owned_page': page}) }}" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">{{ page }}</a>
+									{% endif %}
+								{% endfor %}
+								
+								{% if endPage < notOwnedTotalPages %}
+									{% if endPage < notOwnedTotalPages - 1 %}
+										<span class="px-2">...</span>
+									{% endif %}
+									<a href="{{ path('pokedex', {'owned_page': ownedCurrentPage, 'not_owned_page': notOwnedTotalPages}) }}" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">{{ notOwnedTotalPages }}</a>
+								{% endif %}
+								
+								{% if notOwnedCurrentPage < notOwnedTotalPages %}
+									<a href="{{ path('pokedex', {'owned_page': ownedCurrentPage, 'not_owned_page': notOwnedCurrentPage+1}) }}" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">&raquo;</a>
+								{% endif %}
+							</nav>
+						</div>
+					{% endif %}
+				{% else %}
+					<p class="text-center text-gray-600 mt-4">You already own all the Pokémon! 🎉</p>
+				{% endif %}
+			</div>
 		</div>
 	</div>
 {% endblock %}
-
