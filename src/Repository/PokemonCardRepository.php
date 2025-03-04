@@ -29,14 +29,13 @@ class PokemonCardRepository extends ServiceEntityRepository
     /**
      * Récupère les cartes non possédées par un utilisateur donné.
      */
-    public function findNotOwnedByUser(int $userId): array
+    public function findNotOwnedByUser(int $userId)
     {
         return $this->createQueryBuilder('p')
             ->leftJoin('p.users', 'u')
             ->andWhere('u.id IS NULL OR u.id != :userId')
             ->setParameter('userId', $userId)
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
     }
 
     //    /**
