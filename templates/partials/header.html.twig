@@ -28,9 +28,17 @@
           <a href="{{ path('pokedex') }}" class="block mt-4 lg:inline-block lg:mt-0 text-yellow-900 hover:text-yellow-700 mr-4">
             Pokédex
           </a>
-          <a href="{{ path('app_exchange') }}" class="block mt-4 lg:inline-block lg:mt-0 text-yellow-900 hover:text-yellow-700">
-            Échanges
-          </a>
+          
+          {% if not is_granted('ROLE_VIP') %}
+            <a href="{{ path('vip_purchase') }}" 
+              class="block mt-4 lg:inline-block lg:mt-0 text-yellow-900 hover:text-yellow-700 mr-4">
+              Become VIP
+            </a>
+          {% else %}
+            <a href="{{ path('exchange') }}" class="block mt-4 lg:inline-block lg:mt-0 text-yellow-900 hover:text-yellow-700">
+              Exchange
+            </a>
+          {% endif %}
         </div>
 
         <!-- User Authentication Section -->

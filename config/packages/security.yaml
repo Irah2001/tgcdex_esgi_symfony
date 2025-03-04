@@ -18,6 +18,10 @@ security:
             stateless: true
             custom_authenticators:
                 - App\Security\JwtAuthenticator
+            form_login:
+                login_path: auth_login
+
+            access_denied_handler: App\Security\CustomAccessDeniedHandler
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -28,10 +32,9 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/(login|register|verify|), roles: PUBLIC_ACCESS }
+        - { path: ^/(login|register|verify|home), roles: PUBLIC_ACCESS }
+        - { path: ^/(exchange), roles: ROLE_VIP }
         - { path: ^/, roles: ROLE_USER }
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
 
 when@test:
     security:
