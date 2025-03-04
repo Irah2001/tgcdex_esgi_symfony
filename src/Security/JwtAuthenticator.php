@@ -40,14 +40,14 @@ class JwtAuthenticator extends AbstractAuthenticator
         $parsedToken = $this->jwtService->parseToken($token);
 
         if (!$parsedToken) {
-            throw new AuthenticationException('Token JWT invalide ou expiré.');
+            throw new AuthenticationException('JWT token is invalid');
         }
 
         $userId = $parsedToken->claims()->get('uid');
         $user = $this->userRepository->find($userId);
 
         if (!$user) {
-            throw new AuthenticationException('Utilisateur non trouvé.');
+            throw new AuthenticationException('User not found');
         }
 
         return new SelfValidatingPassport(new UserBadge($userId, function () use ($user) {
@@ -67,6 +67,6 @@ class JwtAuthenticator extends AbstractAuthenticator
 
     public function start(): JsonResponse
     {
-        return new JsonResponse(['error' => 'Authentification requise.'], JsonResponse::HTTP_UNAUTHORIZED);
+        return new JsonResponse(['error' => 'Auth required'], JsonResponse::HTTP_UNAUTHORIZED);
     }
 }
