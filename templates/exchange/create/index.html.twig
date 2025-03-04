@@ -1,62 +1,120 @@
 {% extends 'base.html.twig' %}
 
-{% block title %} Create an exchange {% endblock %}
-
-{% block stylesheets %}
-<style>
-.form-content {
-    display: grid;
-    width: 100%;
-    grid-template-columns: 1fr 1fr;
-}
-.gaincard {
-    display: none;
-}
-</style>
-{% endblock %}
-
+{% block title %}Create an Exchange - PokéPack Explorer{% endblock %}
 
 {% block body %}
-<div class="mx-32">
-<h1 class="text-3xl">Create an exchange</h1>
-<form action="/exchange-create" method="post">
-    <button type="submit" class="inline-block text-sm px-4 py-2 leading-none border rounded text-yellow-900 border-yellow-900 hover:border-transparent hover:text-yellow-400 hover:bg-yellow-900 mt-4 lg:mt-0">Create exchange</button>
-    <div class="form-content">
-        <div class="left-column">
-            <h2>Given cards</h2>
-            {% for card in user.getPokedex() %}
-                <input type="checkbox" value="{{ card.getId() }}" name="givenCards[]"> {{ card.getName() }} <br>
-            {% endfor %}
-        </div>
-        <div class="right-column">
-            <h2>Gained cards</h2>
-            <input type="text" id="searchInput" class="outline outline-1" placeholder="Rechercher..."> <br>
-            {% for card in allCards %}
-                <div class="gaincard" aria-label="{{ card.getName() }}"><input type="checkbox" value="{{ card.getId() }}" name="gainCards[]"> {{ card.getName() }} </div>
-            {% endfor %}
+<div class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-300 via-pink-400 to-red-400 overflow-hidden">
+    <!-- Animated Pokéballs -->
+    <div class="absolute top-0 left-0 w-48 h-48 bg-center bg-contain bg-no-repeat opacity-20 animate-bounce" 
+         style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Pokebola-pokeball-png-0.png/601px-Pokebola-pokeball-png-0.png');">
+    </div>
+    <div class="absolute bottom-0 right-0 w-64 h-64 bg-center bg-contain bg-no-repeat opacity-20 animate-spin-slow" 
+         style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Pokebola-pokeball-png-0.png/601px-Pokebola-pokeball-png-0.png');">
+    </div>
+
+    <!-- Main Content -->
+    <div class="z-10 w-full max-w-5xl px-6 py-10 bg-white bg-opacity-80 rounded-xl shadow-2xl my-20">
+        <h1 class="text-4xl font-extrabold text-yellow-600 tracking-wider drop-shadow-md uppercase text-center mb-8">
+            Create an Exchange
+        </h1>
+        
+        <form action="/exchange-create" method="post">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Left Column - Given Cards -->
+                <div class="bg-yellow-100 rounded-lg p-6 shadow-md">
+                    <h2 class="text-2xl font-bold text-yellow-600 mb-4">Cards You'll Give</h2>
+                    <div class="max-h-96 overflow-y-auto pr-2">
+                        {% for card in user.getPokedex() %}
+                            <div class="mb-2 p-2 hover:bg-yellow-200 rounded-md transition-colors">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" value="{{ card.getId() }}" name="givenCards[]" class="form-checkbox h-5 w-5 text-yellow-600 rounded">
+                                    <span>{{ card.getName() }}</span>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Right Column - Gained Cards -->
+                <div class="bg-pink-100 rounded-lg p-6 shadow-md">
+                    <h2 class="text-2xl font-bold text-pink-600 mb-4">Cards You'll Receive</h2>
+                    <div class="mb-4">
+                        <input type="text" id="searchInput" placeholder="Search cards..." 
+                               class="w-full p-2 border border-pink-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500">
+                    </div>
+                    <div class="max-h-96 overflow-y-auto pr-2">
+                        {% for card in allCards %}
+                            <div class="gaincard mb-2 p-2 hover:bg-pink-200 rounded-md transition-colors" aria-label="{{ card.getName() }}">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" value="{{ card.getId() }}" name="gainCards[]" class="form-checkbox h-5 w-5 text-pink-600 rounded">
+                                    <span>{{ card.getName() }}</span>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="text-center mt-8">
+                <button type="submit" class="inline-block px-8 py-3 text-lg font-bold uppercase text-white bg-yellow-600 rounded-full hover:bg-yellow-500 transition-colors duration-300 transform hover:scale-105">
+                    Create Exchange
+                </button>
+            </div>
+        </form>
+        
+        <!-- Pokédex-style info box -->
+        <div class="mt-8 bg-red-100 border-4 border-red-500 rounded-lg p-4 max-w-2xl mx-auto transform -rotate-1">
+            <h3 class="text-lg font-bold text-red-600 mb-2">Trading Tips:</h3>
+            <p class="text-gray-700 text-sm">
+                Remember, a fair trade benefits both trainers! Consider the rarity and power of each card when proposing exchanges.
+                Only VIP trainers can initiate trades, but any trainer can accept your trade offers.
+            </p>
         </div>
     </div>
-</form>
 </div>
 
 <script>
-    let sField = document.getElementById("searchInput").addEventListener("input", search);
+    document.getElementById("searchInput").addEventListener("input", search);
     let inputs = document.querySelectorAll('.gaincard');
+    
+    // Hide all cards initially
     inputs.forEach(element => {
         element.style.display = "none";
     });
-    function search(e){
+    
+    function search(e) {
         if (e.target.value.length < 3) {
             inputs.forEach(element => {
                 element.style.display = "none";
             });
             return;
-        };
+        }
+        
         inputs.forEach(element => {
-            if (element.ariaLabel.includes(e.target.value)) element.style.display = "block";
-            else element.style.display = "none";
+            if (element.ariaLabel.toLowerCase().includes(e.target.value.toLowerCase())) {
+                element.style.display = "block";
+            } else {
+                element.style.display = "none";
+            }
         });
     }
 </script>
+{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    @keyframes spin-slow {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    .animate-spin-slow {
+        animation: spin-slow 20s linear infinite;
+    }
+</style>
 {% endblock %}
