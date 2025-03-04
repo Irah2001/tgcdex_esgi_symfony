@@ -24,9 +24,13 @@
             <div class="p-3 bg-red-100 border-l-4 border-red-500 text-red-700" role="alert">{{ flash_error }}</div>
         {% endfor %}
 
+        {% for flash_success in app.flashes('login_success') %}
+            <div class="p-3 bg-green-100 border-l-4 border-green-500 text-green-700" role="alert">{{ flash_success }}</div>
+        {% endfor %}
+
         <!-- Login Form -->
         <div>
-            <form action="{{ path('auth_login') }}" method="post" class="space-y-4">
+            <form action="{{ path('auth_login') }}{% if app.request.query.get('redirect') %}?redirect={{ app.request.query.get('redirect')|url_encode }}{% endif %}" method="post" class="space-y-4">
                 <div class="text-left">
                     <label for="email" class="block text-yellow-700 font-bold mb-2">Email:</label>
                     <input 
@@ -48,6 +52,10 @@
                         class="w-full px-3 py-2 border border-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     >
                 </div>
+
+                {% if app.request.query.get('redirect') %}
+                    <input type="hidden" name="redirect" value="{{ app.request.query.get('redirect') }}">
+                {% endif %}
 
                 <button type="submit" 
                         class="mt-4 inline-block text-lg font-bold uppercase px-6 py-3 rounded-full shadow-lg 

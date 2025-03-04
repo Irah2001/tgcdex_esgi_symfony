@@ -29,11 +29,11 @@ class JwtService
     public function createToken(User $user): Plain
     {
         $now = new DateTimeImmutable();
-        $expiresAt = $now->modify('+1 hour');
+        $expiresAt = $now->modify('+1 day');
 
         return $this->config->builder()
-            ->issuedBy('Pokedex')
-            ->permittedFor('Pokedex')
+            ->issuedBy('PokéPack Explorer')
+            ->permittedFor('PokéPack Explorer')
             ->identifiedBy(bin2hex(random_bytes(16)), true)
             ->issuedAt($now)
             ->canOnlyBeUsedAfter($now)
@@ -51,7 +51,7 @@ class JwtService
             }
 
             $constraints = [
-                new IssuedBy('Pokedex'),
+                new IssuedBy('PokéPack Explorer'),
                 new LooseValidAt(SystemClock::fromUTC()),
             ];
 
